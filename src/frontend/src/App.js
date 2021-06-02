@@ -1,12 +1,12 @@
 import {useState, useEffect} from "react";
 import API from "./lib/API";
-import { Layout, Menu, Breadcrumb, Table } from 'antd';
+import {Layout, Menu, Breadcrumb, Table, Spin, Empty} from 'antd';
 import {
     DesktopOutlined,
     PieChartOutlined,
     FileOutlined,
     TeamOutlined,
-    UserOutlined,
+    UserOutlined, LoadingOutlined,
 } from '@ant-design/icons';
 import './App.css';
 
@@ -36,14 +36,20 @@ const columns = [
     },
 ];
 
+const antIcon = <LoadingOutlined style={{ fontSize: 24}} spin/>
+
 const App = () => {
 
     const [students, setStudents] = useState([]);
     const [collapsed, setCollapsed] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const getStudents = () =>{
         API.Students.getAll()
-            .then(response => setStudents(response.data))
+            .then(response => {
+                setStudents(response.data);
+                setLoading(false);
+            })
             .catch(err => console.log(err.message));
     }
 
@@ -52,10 +58,13 @@ const App = () => {
     },[]);
 
     const renderStudents = () => {
-        if(students.length <= 0){
-            return "no data available";
+        if(loading){
+            return <Spin indicator={antIcon}/>
         }
-        return <Table dataSource={students} columns={columns} />;
+        if(students.length <= 0){
+            return <Empty />;
+        }
+        return <Table dataSource={students} columns={columns} bordered title={() => 'Students'} pagination={{ pageSize: 50}} scroll={{ y: 240}} rowKey={(student) => student.id}/>;
     }
 
     return (
@@ -95,7 +104,7 @@ const App = () => {
                         {renderStudents()}
                     </div>
                 </Content>
-                <Footer style={{ textAlign: 'center' }}>Ant Design ©2018 Created by Ant UED</Footer>
+                <Footer style={{ textAlign: 'center' }}>By Collin Lanier</Footer>
             </Layout>
         </Layout>
     );
